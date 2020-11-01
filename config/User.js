@@ -9,6 +9,10 @@ const UserSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  phone_number: {
+    type: Number,
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now(),

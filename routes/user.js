@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const User = require("../config/User");
+const auth = require("../config/middlewares/auth");
+
 require("dotenv").config();
 
 router.get("/", async (req, res) => {
@@ -12,6 +14,15 @@ router.get("/", async (req, res) => {
     res.send(user);
   } catch (err) {
     res.send(err);
+  }
+});
+
+router.get("/logged", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    res.send(user);
+  } catch (e) {
+    res.send({ status: false, msg: "Error in Fetching user" });
   }
 });
 

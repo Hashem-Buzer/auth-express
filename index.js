@@ -23,7 +23,7 @@ app.get("/", (req, res) => {
   res.json({ message: "API Working" });
 });
 
-// User route
+// User routes
 app.use("/user", user);
 
 app.listen(PORT, (req, res) => {

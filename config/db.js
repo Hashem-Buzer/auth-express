@@ -16,4 +16,5 @@ const InitiateMongoServer = async () => {
   }
 };
 
+// Exporting the starting mongo server
 module.exports = InitiateMongoServer;

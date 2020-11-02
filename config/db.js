@@ -1,17 +1,16 @@
 const mongoose = require("mongoose");
 
-// Replace this with your MONGOURI.
-const MONGOURI = "mongodb://localhost/auth-test";
+const MONGOURI = "mongodb://localhost/express-auth";
 
 const InitiateMongoServer = async () => {
   try {
     await mongoose.connect(MONGOURI, {
       useNewUrlParser: true,
     });
-    console.log("Connected to DB !!");
-  } catch (e) {
-    console.log("ERROR connecting to db===> ", e);
-    throw e;
+    // console.log("Connected to DB !!");
+  } catch (error) {
+    // console.log("ERROR connecting to db===> ", error);
+    throw error;
   }
 };
 

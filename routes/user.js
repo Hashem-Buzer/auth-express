@@ -5,6 +5,7 @@ const router = express.Router();
 const User = require("../config/User");
 const auth = require("../config/middlewares/auth");
 
+// Access .env
 require("dotenv").config();
 
 // Get all users

@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
+// Export token validation middleware
 module.exports = (req, res, next) => {
   const token = req.header("token");
   // console.log("TOKEN FROM HEADER===> ", token);

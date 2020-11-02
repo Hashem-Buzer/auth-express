@@ -1,14 +1,16 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const user = require("./routes/user");
-const InitiateMongoServer = require("./config/db");
 
 // Initiate Mongo Server
+const InitiateMongoServer = require("./config/db");
 InitiateMongoServer();
 
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+require("dotenv").config();
 
 // PORT
 const PORT = process.env.PORT || 4000;

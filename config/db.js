@@ -1,7 +1,9 @@
 const mongoose = require("mongoose");
 
+// Mongo link connection
 const MONGOURI = "mongodb://localhost/express-auth";
 
+// Starting mongo
 const InitiateMongoServer = async () => {
   try {
     await mongoose.connect(MONGOURI, {

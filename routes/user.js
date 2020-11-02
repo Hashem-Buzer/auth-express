@@ -7,6 +7,7 @@ const auth = require("../config/middlewares/auth");
 
 require("dotenv").config();
 
+// Get all users
 router.get("/", async (req, res) => {
   try {
     let user = await User.find({});
@@ -17,6 +18,7 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Checking for token validation
 router.get("/logged", auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -26,6 +28,7 @@ router.get("/logged", auth, async (req, res) => {
   }
 });
 
+// Signup route
 router.post("/signup", async (req, res) => {
   // console.log("req===> ", req.body);
 
@@ -67,6 +70,7 @@ router.post("/signup", async (req, res) => {
   }
 });
 
+// Login route
 router.post("/login", async (req, res) => {
   // console.log("req===> ", req.body);
 
@@ -104,6 +108,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// Delete all users
 router.delete("/", async (req, res) => {
   try {
     let user = await User.deleteMany({});

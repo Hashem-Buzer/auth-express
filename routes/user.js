@@ -8,17 +8,6 @@ const auth = require("../config/middlewares/auth");
 // Accessing .env
 require("dotenv").config();
 
-// Get all users
-router.get("/", async (req, res) => {
-  try {
-    let user = await User.find({});
-    if (!user || user.length <= 0) return res.send("No User Found!!");
-    res.send(user);
-  } catch (err) {
-    res.send(err);
-  }
-});
-
 // Checking for token validation
 router.get("/logged", auth, async (req, res) => {
   try {
@@ -106,16 +95,6 @@ router.post("/login", async (req, res) => {
     );
   } catch (err) {
     return res.send({ status: false, msg: err });
-  }
-});
-
-// Delete all users
-router.delete("/", async (req, res) => {
-  try {
-    let user = await User.deleteMany({});
-    res.send(user);
-  } catch (err) {
-    res.send(err);
   }
 });
 

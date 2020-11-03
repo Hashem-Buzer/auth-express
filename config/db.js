@@ -1,7 +1,9 @@
 const mongoose = require("mongoose");
 
+require("dotenv").config();
+
 // Mongo link connection
-const MONGOURI = "mongodb://localhost/express-auth";
+const MONGOURI = process.env.DB;
 
 // Starting mongo
 const InitiateMongoServer = async () => {

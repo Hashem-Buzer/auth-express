@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 
 // User routers
 const user = require("./routes/user");
@@ -11,6 +12,7 @@ InitiateMongoServer();
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors());
 
 // Access to .env
 require("dotenv").config();

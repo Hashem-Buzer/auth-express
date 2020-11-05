@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const User = require("../config/User");
-const auth = require("../config/middlewares/auth");
+const auth = require("../middlewares/auth");
 
 // Accessing .env
 require("dotenv").config();
@@ -11,11 +11,9 @@ require("dotenv").config();
 // Checking for token validation
 router.get("/logged", auth, async (req, res) => {
   try {
-    // const user = await User.findById(req.user.id);
-    // res.send(user);
-    res.send({ status: true, msg: "Logged" });
+    res.send(true);
   } catch (e) {
-    res.send({ status: false, msg: "Error in Fetching user" });
+    res.send(false);
   }
 });
 

@@ -11,8 +11,9 @@ require("dotenv").config();
 // Checking for token validation
 router.get("/logged", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    res.send(user);
+    // const user = await User.findById(req.user.id);
+    // res.send(user);
+    res.send({ status: true, msg: "Logged" });
   } catch (e) {
     res.send({ status: false, msg: "Error in Fetching user" });
   }

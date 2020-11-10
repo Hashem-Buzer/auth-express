@@ -5,11 +5,39 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 const User = require("../config/User");
 const auth = require("../middlewares/auth");
-// const emailjs = require("emailjs");
-const emailjs = require("emailjs-com");
+const nodemailer = require("nodemailer");
 
 // Accessing .env
 require("dotenv").config();
+
+// Creating connection with nodemailer
+let transporter = nodemailer.createTransport({
+  service: "gmail",
+  secure: false,
+  auth: {
+    user: process.env.EMAIL,
+    pass: process.env.EMAIL_PASS,
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
+
+// Generate password token and expiration date and assign them to the input email.
+let generateInsertCode = async (email) => {
+  try {
+    let user = await User.findOneAndUpdate(
+      { email },
+      {
+        code: crypto.randomBytes(3).toString("hex"),
+        codeExpiration: Date.now() + 3600000, // expires in one hour
+      }
+    );
+    return user;
+  } catch (err) {
+    return err;
+  }
+};
 
 // Checking for token validation
 router.get("/logged", auth, async (req, res) => {
@@ -113,53 +141,24 @@ router.post("/generateCode", async (req, res) => {
       msg: "Email not registered!!",
     });
 
-  generateInsertCode(email).then((user) => {
-    console.log("user===============> ", user);
+  let userCode = await generateInsertCode(email);
 
-    // var data = {
-    //   service_id: "gmail",
-    //   template_id: "template_xnib93i",
-    //   user_id: "user_3wcZojnv9Dx1ylzdWwP5c",
-    //   template_params: {
-    //     to_username: user.username,
-    //     to_email: user.email,
-    //     message: user.code,
-    //   },
-    // };
+  // console.log("user===============> ", userCode);
 
-    emailjs
-      .send("gmail", "template_xnib93i", {
-        to_username: user.username,
-        to_email: user.email,
-        message: user.code,
-      })
-      .then(
-        function (response) {
-          console.log("SUCCESS!", response.status, response.text);
-        },
-        function (err) {
-          console.log("FAILED...", err);
-        }
-      );
-    // router.post("https://api.emailjs.com/api/v1.0/email/send",
-    // });
-  });
+  transporter.sendMail(
+    {
+      from: "Auth application",
+      to: userCode.email,
+      subject: "Password resetting",
+      html:
+        "<b> This is your code to reset your password:</b> " + userCode.code,
+    },
+    (error, info) => {
+      return error
+        ? res.send({ status: false, msg: error })
+        : res.send({ status: true, msg: "Email sent" });
+    }
+  );
 });
-
-// Generate password token and expiration date and assign them to the input email.
-var generateInsertCode = async (email) => {
-  try {
-    let user = await User.findOneAndUpdate(
-      { email },
-      {
-        code: crypto.randomBytes(3).toString("hex"),
-        codeExpiration: Date.now() + 3600000, // expires in one hour
-      }
-    );
-    return user;
-  } catch (err) {
-    return err;
-  }
-};
 
 module.exports = router;

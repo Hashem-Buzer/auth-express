@@ -23,28 +23,12 @@ let transporter = nodemailer.createTransport({
   },
 });
 
-// Generate password token and expiration date and assign them to the input email.
-let generateInsertCode = async (email) => {
-  try {
-    let user = await User.findOneAndUpdate(
-      { email },
-      {
-        code: crypto.randomBytes(3).toString("hex"),
-        codeExpiration: Date.now() + 3600000, // expires in one hour
-      }
-    );
-    return user;
-  } catch (err) {
-    return err;
-  }
-};
-
 // Checking for token validation
 router.get("/logged", auth, async (req, res) => {
   try {
-    res.send(true);
+    return res.send(true);
   } catch (e) {
-    res.send(false);
+    return res.send(false);
   }
 });
 
@@ -56,7 +40,7 @@ router.post("/signup", async (req, res) => {
 
   try {
     let user = await User.findOne({ username });
-    // console.log("USER===> ", user);
+    console.log("USER===> ", user);
 
     if (user) return res.send({ status: false, msg: "User Already Exists" });
 
@@ -87,7 +71,7 @@ router.post("/signup", async (req, res) => {
     );
   } catch (err) {
     console.log("ERRRRRR==> ", err);
-    // return res.send({ status: false, msg: err });
+    return res.send({ status: false, msg: err });
   }
 });
 
@@ -102,7 +86,7 @@ router.post("/login", async (req, res) => {
     if (!user)
       return res.send({
         status: false,
-        msg: "No User Found With This Username!!",
+        msg: "No User Found With This Username or Email!!",
       });
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -129,10 +113,17 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Generate code of 6 digits to be sent to email.
-router.post("/generateCode", async (req, res) => {
+// Generate pass-code of 6 digits and expiration date and assign them to the email from the req in database
+router.post("/send-passCode", async (req, res) => {
   const { email } = req.body;
-  let user = await User.findOne({ email });
+
+  let user = await User.findOneAndUpdate(
+    { email },
+    {
+      code: crypto.randomBytes(3).toString("hex"),
+      codeExpiration: Date.now() + 3600000, // expires in one hour
+    }
+  );
   // console.log("user==> ", user);
 
   if (!user)
@@ -141,17 +132,14 @@ router.post("/generateCode", async (req, res) => {
       msg: "Email not registered!!",
     });
 
-  let userCode = await generateInsertCode(email);
-
-  // console.log("user===============> ", userCode);
+  await user.save();
 
   transporter.sendMail(
     {
       from: "Auth application",
-      to: userCode.email,
+      to: user.email,
       subject: "Password resetting",
-      html:
-        "<b> This is your code to reset your password:</b> " + userCode.code,
+      html: "<b> This is your code to reset your password:</b> " + user.code,
     },
     (error, info) => {
       return error
@@ -159,6 +147,53 @@ router.post("/generateCode", async (req, res) => {
         : res.send({ status: true, msg: "Email sent" });
     }
   );
+});
+
+// Confirming the given reset code
+router.post("/confirm-passCode", async (req, res) => {
+  const { email, code } = req.body;
+
+  try {
+    let user = await User.findOne({ email, code });
+    console.log("user with code ===> ", user);
+
+    if (!user)
+      return res.send({
+        status: false,
+        msg: "No User Found With This Code!!",
+      });
+
+    return res.send({ status: true, msg: "Valid code" });
+  } catch (err) {
+    return res.send({ status: false, msg: err });
+  }
+});
+
+// Reset password by email
+router.post("/reset-password", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    let user = await User.findOne({ email });
+
+    if (!user)
+      return res.send({
+        status: false,
+        msg: "No User Found With This Username or Email!!",
+      });
+
+    const salt = await bcrypt.genSalt(10);
+    // console.log("SALT===> ", salt);
+
+    user.password = await bcrypt.hash(password, salt);
+    // console.log("HASHED PASS===> ", user.password);
+
+    await user.save();
+
+    return res.send({ status: true, msg: "Password changed successfully." });
+  } catch (err) {
+    return res.send({ status: false, msg: err });
+  }
 });
 
 module.exports = router;

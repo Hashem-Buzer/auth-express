@@ -114,7 +114,7 @@ router.post("/login", async (req, res) => {
 });
 
 // Generate pass-code of 6 digits and expiration date and assign them to the email from the req in database
-router.post("/send-passCode", async (req, res) => {
+router.post("/send-passCode", auth, async (req, res) => {
   const { email } = req.body;
 
   let user = await User.findOneAndUpdate(
@@ -150,7 +150,7 @@ router.post("/send-passCode", async (req, res) => {
 });
 
 // Confirming the given reset code
-router.post("/confirm-passCode", async (req, res) => {
+router.post("/confirm-passCode", auth, async (req, res) => {
   const { email, code } = req.body;
 
   try {
@@ -170,7 +170,7 @@ router.post("/confirm-passCode", async (req, res) => {
 });
 
 // Reset password by email
-router.post("/reset-password", async (req, res) => {
+router.post("/reset-password", auth, async (req, res) => {
   const { email, password } = req.body;
 
   try {

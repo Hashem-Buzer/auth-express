@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 require("dotenv").config();
 
-// Mongo link connection
+// Mongo link for connection
 const MONGOURI = process.env.DB;
 
 // Starting mongo

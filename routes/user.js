@@ -11,7 +11,7 @@ const nodemailer = require("nodemailer");
 require("dotenv").config();
 
 // Creating connection with nodemailer
-let transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
   service: "gmail",
   secure: false,
   auth: {
@@ -22,6 +22,22 @@ let transporter = nodemailer.createTransport({
     rejectUnauthorized: false,
   },
 });
+
+// Send Email
+const send = async (user) => {
+  // console.log("EMAILuser========> ", user);
+  try {
+    await transporter.sendMail({
+      from: "Auth application",
+      to: user.email,
+      subject: "Password resetting",
+      html: "<b> This is your code to reset your password:</b> " + user.code,
+    });
+    return { status: true, msg: "Email sent" };
+  } catch (error) {
+    return { status: false, msg: error };
+  }
+};
 
 // Checking for token validation
 router.get("/logged", auth, async (req, res) => {
@@ -114,48 +130,39 @@ router.post("/login", async (req, res) => {
 });
 
 // Generate pass-code of 6 digits and expiration date and assign them to the email from the req in database
-router.post("/send-passCode", auth, async (req, res) => {
+router.post("/send-passCode", async (req, res) => {
   const { email } = req.body;
 
-  let user = await User.findOneAndUpdate(
-    { email },
-    {
-      code: crypto.randomBytes(3).toString("hex"),
-      codeExpiration: Date.now() + 3600000, // expires in one hour
-    }
-  );
-  // console.log("user==> ", user);
+  try {
+    let user = await User.findOneAndUpdate(
+      { email },
+      {
+        code: crypto.randomBytes(3).toString("hex"),
+        codeExpiration: Date.now() + 3600000, // expires in one hour
+      },
+      { new: true } // return new collection after updating
+    );
+    // console.log("user========> ", user);
 
-  if (!user)
-    return res.send({
-      status: false,
-      msg: "Email not registered!!",
-    });
+    if (!user)
+      return res.send({
+        status: false,
+        msg: "Email not registered!!",
+      });
 
-  await user.save();
-
-  transporter.sendMail(
-    {
-      from: "Auth application",
-      to: user.email,
-      subject: "Password resetting",
-      html: "<b> This is your code to reset your password:</b> " + user.code,
-    },
-    (error, info) => {
-      return error
-        ? res.send({ status: false, msg: error })
-        : res.send({ status: true, msg: "Email sent" });
-    }
-  );
+    return res.send(await send(user));
+  } catch (err) {
+    return res.send({ status: false, msg: err });
+  }
 });
 
 // Confirming the given reset code
-router.post("/confirm-passCode", auth, async (req, res) => {
+router.post("/confirm-passCode", async (req, res) => {
   const { email, code } = req.body;
 
   try {
     let user = await User.findOne({ email, code });
-    console.log("user with code ===> ", user);
+    // console.log("user with code ===> ", user);
 
     if (!user)
       return res.send({
@@ -163,14 +170,23 @@ router.post("/confirm-passCode", auth, async (req, res) => {
         msg: "No User Found With This Code!!",
       });
 
-    return res.send({ status: true, msg: "Valid code" });
+    return (
+      res.send({ status: true, msg: "Valid code" }),
+      (user = await User.findOneAndUpdate(
+        { email },
+        {
+          code: null,
+          codeExpiration: null,
+        }
+      ))
+    );
   } catch (err) {
     return res.send({ status: false, msg: err });
   }
 });
 
 // Reset password by email
-router.post("/reset-password", auth, async (req, res) => {
+router.post("/reset-password", async (req, res) => {
   const { email, password } = req.body;
 
   try {

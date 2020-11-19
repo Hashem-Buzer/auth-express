@@ -56,7 +56,7 @@ router.post("/signup", async (req, res) => {
 
   try {
     let user = await User.findOne({ username });
-    console.log("USER===> ", user);
+    // console.log("USER===> ", user);
 
     if (user) return res.send({ status: false, msg: "User Already Exists" });
 
